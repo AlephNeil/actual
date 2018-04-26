@@ -1,6 +1,6 @@
 const config = require('../conf/config')
 
-var thePool = new require('mssql').ConnectionPool(config.MSSQL)
+var thePool = new (require('mssql').ConnectionPool)(config.MSSQL)
 
 async function ensurePool() {
     if (thePool.connected) {

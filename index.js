@@ -1,6 +1,7 @@
 const transport = require('./junk/transport')
 const tarkin = require('./junk/tarkin')
 const schedule = require('node-schedule')
+const dps = require('./junk/dps')()
 
 
 function balanceJob() {
@@ -16,11 +17,15 @@ function balanceJob() {
 }
 
 function mainJob() {
-    tarkin()
+    innerJob()
+}
+async function innerJob() {
+    await dps.ensurePool()
+    var testMode = process.env['RUN_MODE'] === 'debug' 
+    await tarkin(testMode)
 }
 
 async function initAndStart() {
-    await require('./junk/dps').ensurePool()    
     const j = schedule.scheduleJob('10 18 * * *', balanceJob)
     const k = schedule.scheduleJob('*/5 * * * *', mainJob)
 }

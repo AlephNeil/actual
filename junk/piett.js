@@ -62,7 +62,7 @@ async function dispatch(reminder) {
         try {
             var alpha = await dps.resolve(reminder.recipient)
         }
-        catch {
+        catch (err) {
             console.log(`DPS error resolving ${reminder.recipient}`)
         }
         await dispatch(new Reminder(alpha.email, reminder.message))

@@ -39,7 +39,7 @@ Promise.prototype.store = function(s) {
 // Note: the problem we solved so ingeniously before -- picking up whose calendar the appt was left in
 // ceases to be an obstacle.
 
-const CALENDAR_DIR = '../webdav'
+const CALENDAR_DIR = 'webdav'
 
 function remFromDesc(desc) {
     var match
@@ -95,10 +95,10 @@ function dtFormat(dtTo, dtFrom) {
         dDesc = "tomorrow"
     }
     else {
-        dDesc = `on ${strftime('%B %d')}`
+        dDesc = `on ${strftime('%B %d', dtTo)}`
     }
 
-    return `${dDesc} at ${strftime('%-I:%M %p')}`
+    return `${dDesc} at ${strftime('%-I:%M %p', dtTo)}`
 }
 
 function populate(template, values) {
@@ -125,12 +125,13 @@ async function grandMoffTarkin(forceTest) {
         ub = new Date()
         ub.setDate(ub.getDate() + 1)
         lb = await frontier.begin(ub)
-        var now = new Date()
-        lb = now > lb ? now : lb
-        // await frontier.commit()
+        // var now = new Date()
+        // lb = now > lb ? now : lb
+        lb = new Date()
     }
 
     console.log(`Handling reminders between ${lb} and ${ub}`)
+    var success = true
     
     try {
         const calendarPaths = await getCalendarPaths()
@@ -155,7 +156,7 @@ async function grandMoffTarkin(forceTest) {
                 })
                 try {
                     for (var i = 0; i < recips.length; i++) {
-                        var r = new Reminder(recip, message)
+                        var r = new Reminder(recips[i], message)
                         console.log(`Dispatching Reminder: ${util.inspect(r)}`)
                         await dispatch(r)
                     }
@@ -163,11 +164,12 @@ async function grandMoffTarkin(forceTest) {
                 }
                 catch (err) {
                     console.log(`Tarkin Process: ${err}`)
+                    success = false
                 }
             })
         })
 
-        await frontier.commit()
+        if (success) await frontier.commit()
     }
     catch (err) {
         console.log(`Tarkin End: ${err}`)
