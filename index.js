@@ -2,16 +2,17 @@ const transport = require('./junk/transport')
 const tarkin = require('./junk/tarkin')
 const schedule = require('node-schedule')
 const dps = require('./junk/dps')()
+const client = require('./junk/smsclient')
 
 
 function balanceJob() {
     client.checkBalance((err, res) => {
-        const msg = err ? `Error: ${res}` : `Zensend balance: ${res}`
+        const msg = err ? `Error: ${err}` : `Zensend balance: ${res}`
         transport.sendMail({
             to: '<admin@carpenterssolicitors.co.uk>',
             text: msg,
         }, (err, info) => {
-            // Not sure what to do here
+            console.log(`Error sending balance email: ${err}`)
         })
     })
 }
@@ -25,7 +26,7 @@ async function innerJob() {
     await tarkin(testMode)
 }
 
-async function initAndStart() {
+function initAndStart() {
     const j = schedule.scheduleJob('10 18 * * *', balanceJob)
     const k = schedule.scheduleJob('*/5 * * * *', mainJob)
 }

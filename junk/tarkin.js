@@ -83,9 +83,11 @@ function nameFromIcal(ical) {
 }
 
 function dtFormat(dtTo, dtFrom) {
+    // console.log(`dtTo = ${dtTo} and dtFrom = ${dtFrom}`)
     var dTo = new Date(dtTo).setHours(0, 0, 0, 0)
     var dFrom = new Date(dtFrom).setHours(0, 0, 0, 0)
     var dayDiff = Math.round((dTo - dFrom)/(1000*60*60*24))
+    // console.log(`dTo = ${dTo} and dFrom = ${dFrom} and dayDiff = ${dayDiff}`)
 
     var dDesc
     if (dayDiff === 0) {
@@ -98,6 +100,7 @@ function dtFormat(dtTo, dtFrom) {
         dDesc = `on ${strftime('%B %d', dtTo)}`
     }
 
+    // console.log(`${dDesc} at ${strftime('%-I:%M %p', dtTo)}`)
     return `${dDesc} at ${strftime('%-I:%M %p', dtTo)}`
 }
 
@@ -136,35 +139,38 @@ async function grandMoffTarkin(forceTest) {
     try {
         const calendarPaths = await getCalendarPaths()
         calendarPaths.forEach(async (path) => {
-            console.log(`Working on: ${path}`)
+            // console.log(`Working on: ${path}`)
             var contents = await parseFileAsync(path)
             var calName = nameFromIcal(contents)
             if (forceTest && calName !== 'Neil Fitzgerald') return
 
             // appts is an object sending EntryIDs to arrays of reminders
             var appts = getAppts(contents, lb, ub)
-            console.log(`Found ${_.keys(appts).length} appts`)
             // var keys = _.keys(appts)
             var keys = await filterAsync(_.keys(appts), frontier.notAlreadyDone)
-            console.log(`After eliminating those already handled, have ${keys.length} left`)
+            console.log(`${calName}: of ${_.keys(appts).length} have ${keys.length} to send`)
             keys.forEach(async (entryID) => {
                 var appt = appts[entryID]
                 var recips = appt.recips
                 var message = populate(config.REMINDER_TEXT, {
                     person: calName,
-                    time: dtFormat(appt.start, ub)
+                    time: dtFormat(appt.start, new Date())
                 })
+                let sentFlag = false
                 try {
                     for (var i = 0; i < recips.length; i++) {
                         var r = new Reminder(recips[i], message)
                         console.log(`Dispatching Reminder: ${util.inspect(r)}`)
                         await dispatch(r)
+                        sentFlag = true
                     }
-                    await frontier.markAsDone(entryID)
                 }
                 catch (err) {
                     console.log(`Tarkin Process: ${err}`)
                     success = false
+                }
+                finally {
+                    if (sentFlag) await frontier.markAsDone(entryID)
                 }
             })
         })
