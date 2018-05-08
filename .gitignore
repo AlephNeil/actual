@@ -5,13 +5,14 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# webdav folder
+# webdav and other folders
 webdav
 conf
+trash
+ics
 
 # Config
 config.js
-conf
 
 # Runtime data
 pids

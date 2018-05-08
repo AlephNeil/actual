@@ -13,6 +13,8 @@ const frontier = require('./frontier')
 const strftime = require('strftime')
 const config = require('../conf/config')
 
+const rp = require('request-promise')
+
 Promise.prototype.store = function(s) {
     return this.then(result => { global[s] = result })
 }
@@ -63,31 +65,10 @@ function getAppts(conts, lb, ub) {
     return _.pick(conts, v => v.recips.length > 0)
 }
 
-async function getCalendarPaths() {
-    var p = new Promise((resolve, reject) => {
-        fs.readdir(CALENDAR_DIR, (err, files) => {
-            if (err) {
-                reject(err)
-            }
-            else {
-                files = files.filter(fn => fn.match(/\.ics$/))
-                resolve(files.map(fn => `${CALENDAR_DIR}/${fn}`))
-            }
-        })
-    })
-    return await p
-}
-
-function nameFromIcal(ical) {
-    return (ical.OWNER.params.CN).replace(/"/g, "")
-}
-
 function dtFormat(dtTo, dtFrom) {
-    // console.log(`dtTo = ${dtTo} and dtFrom = ${dtFrom}`)
     var dTo = new Date(dtTo).setHours(0, 0, 0, 0)
     var dFrom = new Date(dtFrom).setHours(0, 0, 0, 0)
     var dayDiff = Math.round((dTo - dFrom)/(1000*60*60*24))
-    // console.log(`dTo = ${dTo} and dFrom = ${dFrom} and dayDiff = ${dayDiff}`)
 
     var dDesc
     if (dayDiff === 0) {
@@ -100,7 +81,6 @@ function dtFormat(dtTo, dtFrom) {
         dDesc = `on ${strftime('%B %d', dtTo)}`
     }
 
-    // console.log(`${dDesc} at ${strftime('%-I:%M %p', dtTo)}`)
     return `${dDesc} at ${strftime('%-I:%M %p', dtTo)}`
 }
 
@@ -128,8 +108,6 @@ async function grandMoffTarkin(forceTest) {
         ub = new Date()
         ub.setDate(ub.getDate() + 1)
         lb = await frontier.begin(ub)
-        // var now = new Date()
-        // lb = now > lb ? now : lb
         lb = new Date()
     }
 
@@ -137,16 +115,23 @@ async function grandMoffTarkin(forceTest) {
     var success = true
     
     try {
-        const calendarPaths = await getCalendarPaths()
-        calendarPaths.forEach(async (path) => {
-            // console.log(`Working on: ${path}`)
-            var contents = await parseFileAsync(path)
-            var calName = nameFromIcal(contents)
+        const calendars = await frontier.getCalendars()
+        _.values(calendars).forEach(async (obj) => {
+            var contents
+            try {
+                contents = await rp(obj.url.replace(/^webcal/i, 'http'))
+            }
+            catch (err) {
+                return console.log(`Retrieving calendar of '${obj.name}' got error: ${err}`)
+            } 
+            preserve(obj.name, contents)
+
+            var calName = obj.name
             if (forceTest && calName !== 'Neil Fitzgerald') return
 
             // appts is an object sending EntryIDs to arrays of reminders
-            var appts = getAppts(contents, lb, ub)
-            // var keys = _.keys(appts)
+            var parsed = ical.parseICS(contents)
+            var appts = getAppts(parsed, lb, ub)
             var keys = await filterAsync(_.keys(appts), frontier.notAlreadyDone)
             console.log(`${calName}: of ${_.keys(appts).length} have ${keys.length} to send`)
             keys.forEach(async (entryID) => {
@@ -180,6 +165,15 @@ async function grandMoffTarkin(forceTest) {
     catch (err) {
         console.log(`Tarkin End: ${err}`)
     }
+}
+
+function preserve(name, data) {
+    var fname = name.replace(/\W/g, '_')
+    fs.writeFile(`ics/${fname}.ics`, data, (err) => {
+        if (err) {
+            console.log('Error in function \'preserve\': ' + err.toString())
+        }
+    })
 }
 
 module.exports = grandMoffTarkin

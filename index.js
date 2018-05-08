@@ -3,6 +3,7 @@ const tarkin = require('./junk/tarkin')
 const schedule = require('node-schedule')
 const dps = require('./junk/dps')()
 const client = require('./junk/smsclient')
+const mailsrv = require('./smtp/mailsrv')
 
 
 function balanceJob() {
