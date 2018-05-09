@@ -69,7 +69,7 @@ function trans(text) {
                 return /\((.*?)\)/.exec(text)[1]
             },
             url(text) {
-                return /\bwebcal:\/\/.*?\.ics\b/.exec(text)[0]
+                return /\bwebcals?:\/\/.*?\.ics\b/.exec(text)[0]
             }
         }, val => val(text))
     }
