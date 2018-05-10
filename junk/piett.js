@@ -9,35 +9,67 @@ async function main() {
     //  console.log(alpha)
 }
 
+classify_tests = [
+    {
+        regex: /^()$/,
+        type: 'null',
+    },
+    {
+        regex: /^([A-Z'.]{3}[0-9]{3,4})/i,
+        type: 'dps',
+    },
+    {
+        regex: /<(?:mailto:)?([^<>@]+\@(?:[a-z0-9]+[.-])*[a-z]+)>/i,
+        type: 'email',
+    },
+    {
+        regex: /^(?:mailto:)?([a-z0-9+=.-]+\@(?:[a-z0-9]+[.-])*[a-z]+)/i,
+        type: 'email',
+    },
+    {
+        regex: /^([0-9]+[0-9 ]+[0-9])/,
+        type: 'phone',
+    },
+]
+
 // Argument assumed to be a string
 function cleanAndClassify(recipient) {
     recipient = recipient.trim()
 
-    if (recipient === "") return {
-        type: 'null',
-        recipient
+    for (var t of classify_tests) {
+        var m = recipient.match(t.regex)
+        if (m) return {
+            type: t.type,
+            recipient: m[1]
+        }
     }
 
-    // Check for DPS:
-    var m = recipient.match(/^([A-Z'.]{3}[0-9]{3,})/i)
-    if (m) return {
-        type: 'dps',
-        recipient: m[1]
-    }
+    // throw new Error(`Invalid Recipient: ${recipient}`)
+    // if (recipient === "") return {
+    //     type: 'null',
+    //     recipient
+    // }
 
-    // Check for email address:
-    m = recipient.match(/^(\S+\@\S+)/)
-    if (m) return {
-        type: 'email',
-        recipient: m[1]
-    }
+    // // Check for DPS:
+    // var m = recipient.match(/^([A-Z'.]{3}[0-9]{3,})/i)
+    // if (m) return {
+    //     type: 'dps',
+    //     recipient: m[1]
+    // }
+
+    // // Check for email address:
+    // m = recipient.match(/^(?:[a-z]+:)?(\S+\@\S+)/)
+    // if (m) return {
+    //     type: 'email',
+    //     recipient: m[1]
+    // }
         
-    // Check for telephone:
-    m = recipient.match(/^([0-9+][0-9 ]+[0-9])/)
-    if (m) return {
-        type: 'phone',
-        recipient: m[1]
-    }
+    // // Check for telephone:
+    // m = recipient.match(/^([0-9+][0-9 ]+[0-9])/)
+    // if (m) return {
+    //     type: 'phone',
+    //     recipient: m[1]
+    // }
 
     throw new Error(`Invalid Recipient: ${recipient}`)
 }

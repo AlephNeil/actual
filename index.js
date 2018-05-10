@@ -13,7 +13,9 @@ function balanceJob() {
             to: '<admin@carpenterssolicitors.co.uk>',
             text: msg,
         }, (err, info) => {
-            console.log(`Error sending balance email: ${err}`)
+            if (err) {
+                console.log(`Error sending balance email: ${err}`)
+            }
         })
     })
 }

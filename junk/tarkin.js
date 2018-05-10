@@ -4,7 +4,8 @@ const util = require('util')
 const _ = require('underscore')
 const {filterAsync} = require('node-filter-async')
 
-const ical = require('node-ical')
+const ical = require('../node-ical')
+// const ical = require('node-ical')
 const {promisify} = require('util')
 const parseFileAsync = promisify(ical.parseFile).bind(ical)
 
@@ -97,6 +98,7 @@ function populate(template, values) {
 
 async function grandMoffTarkin(forceTest) {
     // Get the outer and inner time horizons
+    // console.log(`## TARKIN STARTS: ${strftime('%H:%M:%S')} ##`)
     var lb, ub
     if (forceTest) {
         ub = new Date()
@@ -116,7 +118,9 @@ async function grandMoffTarkin(forceTest) {
     
     try {
         const calendars = await frontier.getCalendars()
-        _.values(calendars).forEach(async (obj) => {
+
+        await Promise.all(_.values(calendars).map(async (obj) => {
+        // _.values(calendars).forEach(async (obj) => {
             var contents
             try {
                 contents = await rp(obj.url.replace(/^webcal/i, 'http'))
@@ -127,6 +131,7 @@ async function grandMoffTarkin(forceTest) {
             preserve(obj.name, contents)
 
             var calName = obj.name
+            // console.log(`${calName}: Parsing calendar`)
             if (forceTest && calName !== 'Neil Fitzgerald') return
 
             // appts is an object sending EntryIDs to arrays of reminders
@@ -156,15 +161,21 @@ async function grandMoffTarkin(forceTest) {
                 }
                 finally {
                     if (sentFlag) await frontier.markAsDone(entryID)
+                    // if (sentFlag) await frontier.markAsDone(JSON.stringify({
+                    //     start: appt.start,
+                    //     entryID: entryID,
+                    // }))
                 }
             })
-        })
+        }))
 
         if (success) await frontier.commit()
     }
     catch (err) {
-        console.log(`Tarkin End: ${err}`)
+        console.log(`Tarkin Error: ${err}`)
     }
+    // await frontier.purge()
+    console.log(`## TARKIN ENDS: ${strftime('%H:%M:%S')} ##`)
 }
 
 function preserve(name, data) {
