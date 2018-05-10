@@ -31,7 +31,7 @@ async function innerJob() {
 
 function initAndStart() {
     const j = schedule.scheduleJob('10 18 * * *', balanceJob)
-    const k = schedule.scheduleJob('*/5 * * * *', mainJob)
+    const k = schedule.scheduleJob('*/15 * * * *', mainJob)
 }
 
 if (require.main === module) {

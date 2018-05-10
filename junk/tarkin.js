@@ -128,7 +128,7 @@ async function grandMoffTarkin(forceTest) {
             catch (err) {
                 return console.log(`Retrieving calendar of '${obj.name}' got error: ${err}`)
             } 
-            preserve(obj.name, contents)
+            // preserve(obj.name, contents)
 
             var calName = obj.name
             // console.log(`${calName}: Parsing calendar`)
