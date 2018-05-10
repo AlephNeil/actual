@@ -45,7 +45,6 @@ function purgeJob() {
 function initAndStart() {
     const j = schedule.scheduleJob('10 18 * * *', balanceJob)
     const k = schedule.scheduleJob('*/15 * * * *', mainJob)
-    // const l = schedule.scheduleJob('15 18 * * *', purgeJob)
     const l = schedule.scheduleJob('0 * * * *', purgeJob)
 }
 

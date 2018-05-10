@@ -33,7 +33,9 @@ module.exports = {
     },
 
     async notAlreadyDone(entryID) {
-        return !(await sismemberAsync('thelist', entryID)) 
+        // var b = !(await sismemberAsync('thelist', entryID)) 
+        // console.log(`notAlreadyDone: entryID = ${entryID} and b = ${b}`)
+        return !(await sismemberAsync('thelist', entryID))
     },
     async markAsDone(entryID) {
         await saddAsync('thelist', entryID)
@@ -58,4 +60,16 @@ module.exports = {
             }
         })
     }
+}
+
+if (require.main === module) {
+    deleteWhere('thelist', k => {
+        try {
+            var [e, t] = JSON.parse(k)
+            return false
+        }
+        catch (err) {
+            return true
+        }
+    })
 }

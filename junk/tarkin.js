@@ -143,7 +143,7 @@ async function grandMoffTarkin(forceTest) {
                 appts[entryID].start,
             ])
             var keys = await filterAsync(_.keys(appts), async (entryID) => {
-                await frontier.notAlreadyDone(keyFunc(entryID))
+                return await frontier.notAlreadyDone(keyFunc(entryID))
             })
             console.log(`${calName}: of ${_.keys(appts).length} have ${keys.length} to send`)
             await Promise.all(keys.map(async (entryID) => {
