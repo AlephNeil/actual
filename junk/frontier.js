@@ -16,7 +16,7 @@ async function deleteWhere(setName, p) {
     var deletions = 0
     var members = await smembersAsync(setName)
     await Promise.all(members.map(async (k) => {
-        if (!p(k)) continue
+        if (!p(k)) return
         await sremAsync(setName, k)
         deletions++
     }))
