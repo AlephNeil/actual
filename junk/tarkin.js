@@ -96,6 +96,7 @@ function populate(template, values) {
     }).replace(/{{/g, '{').replace(/}}/g, '}')
 }
 
+
 async function grandMoffTarkin(forceTest) {
     // Get the outer and inner time horizons
     // console.log(`## TARKIN STARTS: ${strftime('%H:%M:%S')} ##`)
@@ -137,9 +138,15 @@ async function grandMoffTarkin(forceTest) {
             // appts is an object sending EntryIDs to arrays of reminders
             var parsed = ical.parseICS(contents)
             var appts = getAppts(parsed, lb, ub)
-            var keys = await filterAsync(_.keys(appts), frontier.notAlreadyDone)
+            var keyFunc = entryID => JSON.stringify([
+                entryID,
+                appts[entryID].start,
+            ])
+            var keys = await filterAsync(_.keys(appts), async (entryID) => {
+                await frontier.notAlreadyDone(keyFunc(entryID))
+            })
             console.log(`${calName}: of ${_.keys(appts).length} have ${keys.length} to send`)
-            keys.forEach(async (entryID) => {
+            await Promise.all(keys.map(async (entryID) => {
                 var appt = appts[entryID]
                 var recips = appt.recips
                 var message = populate(config.REMINDER_TEXT, {
@@ -160,13 +167,9 @@ async function grandMoffTarkin(forceTest) {
                     success = false
                 }
                 finally {
-                    if (sentFlag) await frontier.markAsDone(entryID)
-                    // if (sentFlag) await frontier.markAsDone(JSON.stringify({
-                    //     start: appt.start,
-                    //     entryID: entryID,
-                    // }))
+                    if (sentFlag) await frontier.markAsDone(keyFunc(entryID))
                 }
-            })
+            }))
         }))
 
         if (success) await frontier.commit()
