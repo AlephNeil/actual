@@ -1,0 +1,63 @@
+{
+  "_from": "node-ical",
+  "_id": "node-ical@0.6.1",
+  "_inBundle": false,
+  "_integrity": "sha1-iCiuMoKUS9sSgWdfxVfVNTWOf+w=",
+  "_location": "/node-ical",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "node-ical",
+    "name": "node-ical",
+    "escapedName": "node-ical",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/node-ical/-/node-ical-0.6.1.tgz",
+  "_shasum": "8828ae3282944bdb1281675fc557d535358e7fec",
+  "_spec": "node-ical",
+  "_where": "/root/actual",
+  "author": {
+    "name": "Jens Maus",
+    "email": "mail@jens-maus.de"
+  },
+  "bugs": {
+    "url": "https://github.com/jens-maus/node-ical/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "node-uuid": "^1.4.1",
+    "request": "^2.81.0",
+    "rrule": "2.1.0"
+  },
+  "deprecated": false,
+  "description": "A minimal icalendar/ics parser for nodejs",
+  "devDependencies": {
+    "underscore": "1.3.0",
+    "vows": "0.8.1"
+  },
+  "homepage": "https://github.com/jens-maus/node-ical",
+  "keywords": [
+    "ical",
+    "ics",
+    "calendar",
+    "nodejs"
+  ],
+  "license": "Apache-2.0",
+  "main": "index.js",
+  "name": "node-ical",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jens-maus/node-ical.git"
+  },
+  "scripts": {
+    "test": "./node_modules/vows/bin/vows ./test/test.js && ./node_modules/vows/bin/vows ./test/testAsync.js"
+  },
+  "version": "0.6.1"
+}
